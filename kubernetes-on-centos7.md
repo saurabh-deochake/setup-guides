@@ -5,9 +5,9 @@
 This document describes all the steps that are required to install and set up Kubernetes cluster on CentOS 7 machines. This set up tutorial is divided into three parts: first part discusses the lab machines set up that we follow, second part showcases installation steps required to set up Kubernetes cluster on CentOS 7 and finally third part discusses all the problems that may occur during the set up and potential fixes for them.
 
 ### 2) Environment Setup
-Our set up consists of 3 bare metal machines which have CentOS 7 installed in them. You may also want to set up this cluster using virtual machines. We make sure that these three machines are on same subnet and they can ping each other over the network.    
+Our set up consists of 3 bare metal machines which have CentOS 7 installed in them. You may also want to set up this cluster using virtual machines. We make sure that these three machines are on same subnet and they can ping each other over the network.   
 
-	So, below are our nodes including master node and worker nodes:     
+So, below are our nodes including master node and worker nodes:     
   10.23.114.120 node1     -- Master Node   
   10.23.114.194 node2 	  -- Worker Node 1    
   10.23.114.118 node3	    -- Worker Node 2     
