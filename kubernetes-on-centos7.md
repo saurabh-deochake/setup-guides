@@ -228,5 +228,10 @@ In this section, we will mention various problem that you may encounter during t
 	node3     Ready      49s       v1.6.5
 	```    	
  
- --------
+ 
+ 
+     
+ --------    
+ 
+ 
  Have something to improve this setup guide? Feel free to add your suggestions/steps/text. Please maintain the formatting of this guide, if you plan to contribute to this document. Thank you!
