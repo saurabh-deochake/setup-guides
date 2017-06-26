@@ -53,7 +53,7 @@ On each of your three machines- including master node and two worker nodes- inst
   
     
 * **Install and Set Up Kubernetes Components**   
-Next, we will install core components of Kubernetes that are essential for our Kubernetes cluster to work. These components include kubectl, kubelet and kubeadm. We will also install other components that will be important for our set up.   
+Next, we will install core components of Kubernetes that are essential for our Kubernetes cluster to work. These components include kubectl, kubelet and kubeadm. We will also install other components that will be important for our set up.  Install these components on all machines including master and worker nodes.    
   * Add Kubernetes Repo   
   ```bash
   $ cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -105,7 +105,7 @@ Next, we will install core components of Kubernetes that are essential for our K
   ... 
 
   Installed:
-	       kubeadm.x86_64 0:1.6.5-0              
+	 kubeadm.x86_64 0:1.6.5-0              
          kubectl.x86_64 0:1.6.5-0
          kubelet.x86_64 0:1.6.5-0
          kubernetes-cni.x86_64 0:0.5.1-0
@@ -115,7 +115,8 @@ Next, we will install core components of Kubernetes that are essential for our K
   $ systemctl enable kubelet.service
   ```   
   
-  * Initialize Kubernetes Cluster   
+  * Initialize Kubernetes Cluster    
+  Run following commands on Master node.    
   ```bash
   kubeadm init --kubernetes-version=v1.6.5 --pod-network cidr=10.245.0.0/16 --apiserver-advertise-address=10.23.114.120
   ```    
@@ -129,8 +130,29 @@ Next, we will install core components of Kubernetes that are essential for our K
   $ export KUBECONFIG=$HOME/admin.conf
   ```    
   
-  * Join Worker Nodes to Cluster    
-  After you start the cluster with kubeadm init command and the init command runs successfully, you should see a command to join the cluster using a token mentioned. Run that command as root on all the worker nodes so that they join the cluster.    
+  Your Kubernetes cluster is good to go! Next step, we will deploy pods in our cluster.    
+  
+  * Deploy PODs    
+  Before we join worker nodes to the cluster, it is essential to set up CNI network configuration. We will use Flannel overlay network plugin for our networking. To avoid future problems with our pod, we will change the Flannel subnet address. Download yaml file from https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel.yml and in "Network" field change "10.244.0.0/16" to "10.245.0.0/16". This is essential to prevent interesection of Flannel IP range with DNS range. 
+
+	```bash
+	$ kubectl apply –f https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel.yml
+
+	serviceaccount "flannel" configured
+	configmap "kube-flannel-cfg" configured
+	daemonset "kube-flannel-ds" configured
+	```    
+   * Apply Flannel RBAC Configuration
+   To avoid "CrashLoopBackOff" error with our pods that we deployed earlier, we must apply yaml congurations related to Role Based Access Control (RBAC) authorization. Run following commands to apply RBAC.    
+   ```bash
+   $ kubectl apply –f https://github.com/core    os/flannel/blob/master/Documentation/kube-flannel-rbac.yml 
+   
+   clusterrole "flannel" created
+   clusterrolebinding "flannel" created
+   ```     
+   
+   * Join Worker Nodes to Cluster    
+   After you start the cluster with kubeadm init command and the init command runs successfully, you should see a command to join the cluster using a token mentioned. Run that command as root on all the worker nodes so that they join the cluster.    
    ```bash
   $ kubeadm join --token e7986d.e440de5882342711 10.23.114.120:6443
   ```
@@ -144,11 +166,12 @@ Next, we will install core components of Kubernetes that are essential for our K
   node2     Ready      2m        v1.6.5
   node3     Ready      52s       v1.6.5
   ```   
-  
-  Your Kubernetes cluster is good to go! Next step, we will deploy pods in our cluster.    
-  
-  * Deploy PODs
+   
+   Your cluster is set up now and is good to go!    
+   
+   
 
+	
   
 
 
