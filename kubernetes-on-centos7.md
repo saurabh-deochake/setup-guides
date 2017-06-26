@@ -169,7 +169,64 @@ Next, we will install core components of Kubernetes that are essential for our K
    
    Your cluster is set up now and is good to go!     
 
-### 4) Problems and Fixes
+### 4) Problems and Fixes    
+In this section, we will mention various problem that you may encounter during the installation and setup of Kubernetes cluster.    
 
-   
-   
+* **Problem**: Kubeadm init stuck at “Waiting for the control plane to become ready”     
+**Fix**:  The cluster fails to initialize and is stuck at “waiting for the control plane to become ready”. The cluster is not waiting for services tied to control plane but it is stuck waiting because our Docker containers failed to launch. The root of the problem is that Docker tries to fetch images for containers but fails because it cannot go through the proxy. To work around this, please follow below steps to mention http_proxy variable for Docker environment.    
+
+	* Create a systemd directory for Docker service    
+	`$ mkdir /etc/systemd/system/docker.service.d`     
+	
+	* Now, create an environment variable configuration file to hold our http proxy variable.     
+	```bash
+	$ vim /etc/systemd/system/docker.service.d/http-proxy.conf
+	
+	[Service]
+	Environment="HTTP_PROXY=<http://proxy.something.com:port>"
+	```    
+	* Flush changes and verify configuration
+	```bash
+	$ sudo systemctl daemon-reload
+	$ sudo systemctl show --property Environment docker
+	Environment=HTTP_PROXY=HTTP_PROXY=<http://proxy.something.com:port>
+	$ service docker restart
+	```     
+	
+	If this does not work for you then there is another way it can be fixed:
+	* Open configuration file for Docker at /etc/sysconfig/docker and write proxy variable in the file.
+
+	```bash 
+	# vim /etc/sysconfig/docker
+	HTTP_PROXY=HTTP_PROXY=<http://proxy.something.com:port>
+
+	$ service docker restart
+	```    
+* **Problem**: Error message: `misconfiguration: kubelet cgroup driver: "systemd" is different from docker cgroup driver: "cgroupfs"`    
+**Fix**: When you run kubectl get nodes to get all nodes in the cluster, you may not get all nodes listed in the output of the command.    
+	```bash
+	$ kubectl get nodes
+
+	NAME      STATUS     AGE       VERSION
+	node1     NotReady    3m        v1.6.5
+	```    
+
+	I strongly suggest that you check journal logs for kubelet service to check what exactly is going on in the background. Run 	`journalctl –f –u kubelet.service`. You will see that kubelet service has failed due to error message- `misconfiguration: kubelet cgroup driver: "systemd" is different from docker cgroup driver: "cgroupfs"`.    
+
+	It is essential for normal operation that Kubernetes and Docker have same underlying cgroup driver for resources management. A quick fix for this problem is as follows:    
+
+	* Open kubeadm configuration file “/etc/systemd/system/kubelet.service.d/10-kubeadm.conf” and edit the file to change cgroup driver for Kubernetes to match it with that of Docker. Locate “—cgroup-driver=systemd” and replace it with “—cgroup-driver=cgroupfs”
+	* Reload kubelet daemon with systemctl –deamon-reload     
+
+	You should see all your nodes in the cluster.     
+	```bash
+	$ kubectl get nodes
+
+	NAME      STATUS     AGE       VERSION
+	node1     Ready      1m        v1.6.5
+	node2     Ready      53m       v1.6.5
+	node3     Ready      49s       v1.6.5
+	```    	
+ 
+ --------
+ Have something to improve this setup guide? Feel free to add your suggestions/steps/text. Please maintain the formatting of this guide, if you plan to contribute to this document. Thank you!
