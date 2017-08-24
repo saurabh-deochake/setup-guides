@@ -145,7 +145,7 @@ Next, we will install core components of Kubernetes that are essential for our K
    * **Apply Flannel RBAC Configuration**
    To avoid "CrashLoopBackOff" error with our pods that we deployed earlier, we must apply yaml congurations related to Role Based Access Control (RBAC) authorization. Run following commands to apply RBAC.    
    ```bash
-   $ kubectl apply –f https://github.com/core    os/flannel/blob/master/Documentation/kube-flannel-rbac.yml 
+   $ kubectl apply –f https://github.com/coreos/flannel/blob/master/Documentation/kube-flannel-rbac.yml 
    
    clusterrole "flannel" created
    clusterrolebinding "flannel" created
